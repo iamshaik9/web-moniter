@@ -89,12 +89,12 @@ def get_access_token():
 
     print("Refresh status:", response.status_code)
 
+    response.raise_for_status()
+
     data = response.json()
 
-    # SAFE DEBUGGING: never print token values
     print("Refresh response keys:", list(data.keys()))
     print("Error:", data.get("Error"))
-    print("Message:", data.get("message"))
 
     access_token = (
         data.get("access_token")
@@ -102,16 +102,14 @@ def get_access_token():
         or data.get("token")
     )
 
-    if access_token:
-        print("Access token received successfully.")
-        return access_token
+    print("Access token present:", bool(access_token))
 
-    print("Access token present:", "access_token" in data)
-    print("Refresh token present:", "refresh_token" in data)
+    if not access_token:
+        raise RuntimeError("No access token returned by Netra.")
 
-    raise RuntimeError(
-        "No access token returned by Netra."
-    )
+    print("Access token obtained successfully.")
+
+    return access_token
 
 # =========================
 # FIND TODAY'S ATTENDANCE
