@@ -45,47 +45,6 @@ def send_telegram(message):
 # GET ACCESS TOKEN
 # =========================
 
-def get_access_token():
-    print("Refreshing Netra access token...")
-
-    response = requests.post(
-        REFRESH_URL,
-        json={
-            "refresh_token": REFRESH_TOKEN
-        },
-        headers={
-            "Content-Type": "application/json"
-        },
-        timeout=30
-    )
-
-    print("Refresh status:", response.status_code)
-
-    response.raise_for_status()
-
-    data = response.json()
-
-    if data.get("Error"):
-        raise RuntimeError(
-            f"Token refresh failed: {data.get('message', 'Unknown error')}"
-        )
-
-    access_token = (
-        data.get("access_token")
-        or data.get("accessToken")
-        or data.get("token")
-    )
-
-    if not access_token:
-        raise RuntimeError(
-            "No access token returned by Netra."
-        )
-
-    print("Access token obtained.")
-
-    return access_token
-
-
 # =========================
 # GET ATTENDANCE
 # =========================
@@ -114,7 +73,45 @@ def get_attendance(access_token):
         )
 
     return data
+def get_access_token():
+    print("Refreshing Netra access token...")
 
+    response = requests.post(
+        REFRESH_URL,
+        json={
+            "refresh_token": REFRESH_TOKEN
+        },
+        headers={
+            "Content-Type": "application/json"
+        },
+        timeout=30
+    )
+
+    print("Refresh status:", response.status_code)
+
+    data = response.json()
+
+    # SAFE DEBUGGING: never print token values
+    print("Refresh response keys:", list(data.keys()))
+    print("Error:", data.get("Error"))
+    print("Message:", data.get("message"))
+
+    access_token = (
+        data.get("access_token")
+        or data.get("accessToken")
+        or data.get("token")
+    )
+
+    if access_token:
+        print("Access token received successfully.")
+        return access_token
+
+    print("Access token present:", "access_token" in data)
+    print("Refresh token present:", "refresh_token" in data)
+
+    raise RuntimeError(
+        "No access token returned by Netra."
+    )
 
 # =========================
 # FIND TODAY'S ATTENDANCE
