@@ -4,7 +4,7 @@ import requests
 from bs4 import BeautifulSoup
 
 WEBSITE_URL = "https://httpbin.org/html"
-
+TEST_MODE = os.environ.get("TEST_MODE", "false") == "true"
 BOT_TOKEN = os.environ["TELEGRAM_BOT_TOKEN"]
 CHAT_ID = os.environ["TELEGRAM_CHAT_ID"]
 
@@ -56,6 +56,11 @@ def main():
     print(f"Checking: {WEBSITE_URL}")
 
     content = get_website_content()
+    content = get_website_content()
+    
+    if TEST_MODE:
+        content += os.environ.get("TEST_VALUE", "")
+    
     current_hash = calculate_hash(content)
 
     print(f"Current hash: {current_hash}")
