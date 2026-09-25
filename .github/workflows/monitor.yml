@@ -28,6 +28,8 @@ jobs:
         env:
           TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
           TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+          TEST_MODE: ${{ vars.TEST_MODE }}
+          TEST_VALUE: ${{ vars.TEST_VALUE }}
         run: python monitor.py
 
       - name: Save monitoring state
