@@ -7,12 +7,11 @@ from datetime import datetime, timezone, timedelta
 # CONFIG
 # =========================
 
-REFRESH_URL = "https://ngit-api.teleuniv.in/auth/refresh"
 ATTENDANCE_URL = "https://ngit-api.teleuniv.in/sanjaya/getAttendance"
 
 BOT_TOKEN = os.environ["TELEGRAM_BOT_TOKEN"]
 CHAT_ID = os.environ["TELEGRAM_CHAT_ID"]
-REFRESH_TOKEN = os.environ["NETRA_REFRESH_TOKEN"]
+ACCESS_TOKEN = os.environ["NETRA_ACCESS_TOKEN"]
 
 STATE_FILE = "attendance_state.json"
 
@@ -45,6 +44,19 @@ def send_telegram(message):
 # GET ACCESS TOKEN
 # =========================
 
+def get_access_token():
+    print("Using temporary GitHub access token...")
+
+    if not ACCESS_TOKEN:
+        raise RuntimeError(
+            "NETRA_ACCESS_TOKEN secret is missing."
+        )
+
+    print("Access token loaded successfully.")
+
+    return ACCESS_TOKEN
+
+
 # =========================
 # GET ATTENDANCE
 # =========================
@@ -69,23 +81,13 @@ def get_attendance(access_token):
 
     if data.get("Error"):
         raise RuntimeError(
-            f"Attendance API error: {data.get('message', 'Unknown error')}"
+            f"Attendance API error: "
+            f"{data.get('message', 'Unknown error')}"
         )
 
     return data
-def get_access_token():
-    print("Using temporary GitHub access token...")
 
-    access_token = os.getenv("NETRA_ACCESS_TOKEN")
 
-    if not access_token:
-        raise RuntimeError(
-            "NETRA_ACCESS_TOKEN secret is missing."
-        )
-
-    print("Access token loaded successfully.")
-
-    return access_token
 # =========================
 # FIND TODAY'S ATTENDANCE
 # =========================
@@ -102,7 +104,9 @@ def get_today_periods(data):
         if day.get("date") == today:
             periods = day.get("periods", [])
 
-            print(f"Found {len(periods)} periods for today.")
+            print(
+                f"Found {len(periods)} periods for today."
+            )
 
             return periods
 
@@ -122,8 +126,13 @@ def load_state():
     try:
         with open(STATE_FILE, "r") as file:
             return json.load(file)
+
     except Exception:
-        print("State file could not be read. Starting fresh.")
+        print(
+            "State file could not be read. "
+            "Starting fresh."
+        )
+
         return {}
 
 
@@ -152,7 +161,10 @@ STATUS_NAMES = {
 # CHECK CHANGES
 # =========================
 
-def check_attendance_changes(periods, previous_state):
+def check_attendance_changes(
+    periods,
+    previous_state
+):
 
     today = datetime.now(IST).strftime("%Y-%m-%d")
 
@@ -167,7 +179,8 @@ def check_attendance_changes(periods, previous_state):
 
         if status not in (0, 1, 2):
             print(
-                f"Unknown status for period {period_no}: {status}"
+                f"Unknown status for period "
+                f"{period_no}: {status}"
             )
             continue
 
@@ -187,11 +200,11 @@ def check_attendance_changes(periods, previous_state):
             current_state[key] = status
             continue
 
-        # We ONLY care about:
+        # ONLY notify for:
         #
         # 2 -> 1 = Present
         # 2 -> 0 = Absent
-        #
+
         if previous_status == 2 and status == 1:
 
             notifications.append(
@@ -211,12 +224,12 @@ def check_attendance_changes(periods, previous_state):
             )
 
         else:
+
             print(
                 f"No notification for "
                 f"{previous_status} → {status}"
             )
 
-        # Always update state
         current_state[key] = status
 
     return current_state, notifications
@@ -232,7 +245,7 @@ def main():
     print("Tracky Netra Attendance Monitor")
     print("=" * 50)
 
-    # 1. Refresh access token
+    # 1. Get temporary access token
     access_token = get_access_token()
 
     # 2. Get attendance
@@ -256,7 +269,7 @@ def main():
         previous_state
     )
 
-    # 6. Save new state
+    # 6. Save state
     save_state(new_state)
 
     # 7. Send notifications
@@ -269,6 +282,10 @@ def main():
     print("=" * 50)
     print("Check completed.")
     print("=" * 50)
+
+
+if __name__ == "__main__":
+    main()
 
 
 if __name__ == "__main__":
