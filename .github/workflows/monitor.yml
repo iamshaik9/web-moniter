@@ -1,4 +1,4 @@
-name: Website Monitor
+name: Netra Attendance Monitor
 
 on:
   schedule:
@@ -24,27 +24,26 @@ jobs:
       - name: Install dependencies
         run: pip install -r requirements.txt
 
-      - name: Run monitor
+      - name: Run Netra attendance monitor
         env:
           TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
           TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
-          TEST_MODE: ${{ vars.TEST_MODE }}
-          TEST_VALUE: ${{ vars.TEST_VALUE }}
+          NETRA_REFRESH_TOKEN: ${{ secrets.NETRA_REFRESH_TOKEN }}
         run: python monitor.py
 
-      - name: Save monitoring state
+      - name: Save attendance state
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
 
-          git add previous_hash.txt
+          git add attendance_state.json
 
           if git diff --cached --quiet; then
             echo "No state change to commit."
             exit 0
           fi
 
-          git commit -m "Update website monitoring state"
+          git commit -m "Update attendance monitoring state"
 
           git pull --rebase origin main
 
