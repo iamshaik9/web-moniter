@@ -74,43 +74,18 @@ def get_attendance(access_token):
 
     return data
 def get_access_token():
-    print("Refreshing Netra access token...")
+    print("Using temporary GitHub access token...")
 
-    response = requests.post(
-        REFRESH_URL,
-        json={
-            "refresh_token": REFRESH_TOKEN
-        },
-        headers={
-            "Content-Type": "application/json"
-        },
-        timeout=30
-    )
-
-    print("Refresh status:", response.status_code)
-
-    response.raise_for_status()
-
-    data = response.json()
-
-    print("Refresh response keys:", list(data.keys()))
-    print("Error:", data.get("Error"))
-
-    access_token = (
-        data.get("access_token")
-        or data.get("accessToken")
-        or data.get("token")
-    )
-
-    print("Access token present:", bool(access_token))
+    access_token = os.getenv("NETRA_ACCESS_TOKEN")
 
     if not access_token:
-        raise RuntimeError("No access token returned by Netra.")
+        raise RuntimeError(
+            "NETRA_ACCESS_TOKEN secret is missing."
+        )
 
-    print("Access token obtained successfully.")
+    print("Access token loaded successfully.")
 
     return access_token
-
 # =========================
 # FIND TODAY'S ATTENDANCE
 # =========================
