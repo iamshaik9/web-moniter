@@ -100,6 +100,19 @@ def get_today_periods(data):
     payload = data.get("payload", {})
     attendance_details = payload.get("attendanceDetails", [])
 
+    print(
+        "Attendance detail entries:",
+        len(attendance_details)
+    )
+
+    available_dates = [
+        day.get("date")
+        for day in attendance_details
+        if day.get("date")
+    ]
+
+    print("Dates returned by Netra:", available_dates)
+
     for day in attendance_details:
         if day.get("date") == today:
             periods = day.get("periods", [])
@@ -110,7 +123,10 @@ def get_today_periods(data):
 
             return periods
 
-    print("Today's attendance was not found yet.")
+    print(
+        f"Today's date {today} was not found "
+        f"in the API response."
+    )
 
     return []
 
