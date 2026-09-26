@@ -113,8 +113,14 @@ def get_today_periods(data):
 
     print("Dates returned by Netra:", available_dates)
 
+    # Netra identifies today's entry as "Today"
+    # instead of using the actual YYYY-MM-DD date.
     for day in attendance_details:
-        if day.get("date") == today:
+
+        day_date = day.get("date")
+
+        if day_date == today or day_date == "Today":
+
             periods = day.get("periods", [])
 
             print(
@@ -124,12 +130,10 @@ def get_today_periods(data):
             return periods
 
     print(
-        f"Today's date {today} was not found "
-        f"in the API response."
+        f"Today's date {today} was not found in the API response."
     )
 
     return []
-
 
 # =========================
 # STATE MANAGEMENT
