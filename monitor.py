@@ -135,6 +135,7 @@ def get_today_periods(data):
 
     return []
 
+
 # =========================
 # STATE MANAGEMENT
 # =========================
@@ -178,7 +179,7 @@ STATUS_NAMES = {
 
 
 # =========================
-# CHECK CHANGES
+# CHECK ATTENDANCE CHANGES
 # =========================
 
 def check_attendance_changes(
@@ -214,17 +215,48 @@ def check_attendance_changes(
             f"current={status}"
         )
 
-        # First time seeing this period.
-        # Save it as baseline and DO NOT notify.
+        # ==========================================
+        # FIRST TIME SEEING THIS PERIOD TODAY
+        # ==========================================
+
         if previous_status is None:
+
             current_state[key] = status
+
+            # If attendance is already finalized
+            # when Tracky first sees it, notify once.
+            if status == 1:
+
+                notifications.append(
+                    f"🟢 Attendance Recorded\n\n"
+                    f"Date: {today}\n"
+                    f"Period: {period_no}\n"
+                    f"Status: Present"
+                )
+
+            elif status == 0:
+
+                notifications.append(
+                    f"🔴 Attendance Recorded\n\n"
+                    f"Date: {today}\n"
+                    f"Period: {period_no}\n"
+                    f"Status: Absent"
+                )
+
+            else:
+
+                print(
+                    f"Period {period_no} is still "
+                    f"not marked. Waiting for update."
+                )
+
             continue
 
-        # ONLY notify for:
-        #
-        # 2 -> 1 = Present
-        # 2 -> 0 = Absent
+        # ==========================================
+        # NORMAL TRANSITION DETECTION
+        # ==========================================
 
+        # 2 -> 1 = Present
         if previous_status == 2 and status == 1:
 
             notifications.append(
@@ -234,6 +266,7 @@ def check_attendance_changes(
                 f"Status: Present"
             )
 
+        # 2 -> 0 = Absent
         elif previous_status == 2 and status == 0:
 
             notifications.append(
@@ -265,7 +298,7 @@ def main():
     print("Tracky Netra Attendance Monitor")
     print("=" * 50)
 
-    # 1. Get temporary access token
+    # 1. Get access token
     access_token = get_access_token()
 
     # 2. Get attendance
@@ -283,7 +316,7 @@ def main():
     # 4. Load previous state
     previous_state = load_state()
 
-    # 5. Compare
+    # 5. Compare attendance
     new_state, notifications = check_attendance_changes(
         periods,
         previous_state
@@ -302,10 +335,6 @@ def main():
     print("=" * 50)
     print("Check completed.")
     print("=" * 50)
-
-
-if __name__ == "__main__":
-    main()
 
 
 if __name__ == "__main__":
